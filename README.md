@@ -1,4 +1,26 @@
-# React + Vite
+# Holoverse
+
+Holoverse is a local hologram environment built with React, Vite, and React Three Fiber.
+
+It currently supports:
+
+- single-image holograms
+- three-image morph holograms
+- depth-displaced holograms
+- generated mesh and splat modes
+
+## Alpha Prime
+
+This project now includes an `Alpha Prime` persona derived from the Webase agent foundations model.
+
+Files:
+
+- `/Users/vysak/Explorations/Holoverse/public/personas/alpha-prime.json`
+- `/Users/vysak/Explorations/Holoverse/src/components/SingleImageHologram.jsx`
+
+The Alpha Prime hologram uses a single-image embodiment mode rather than the older three-image morphing flow.
+
+## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { BackgroundShader } from './components/BackgroundShader';
 import { Hologram } from './components/Hologram';
 import { ModelDisplacementHologram } from './components/ModelDisplacementHologram';
+import { SingleImageHologram } from './components/SingleImageHologram';
 import { Gen3DMeshHologram } from './components/Gen3DMeshHologram';
 import { SplatHologram } from './components/SplatHologram';
 import { VoiceChat } from './components/VoiceChat';
@@ -15,6 +16,29 @@ function App() {
   const [isCreating, setIsCreating] = useState(false);
   
   const predefinedCharacters = [
+    {
+      name: 'Alpha Prime',
+      designation: 'Topological Liberator',
+      agentId: 'alpha-prime',
+      hologramMode: 'SingleImage',
+      baseImage: '/assets/alpha_prime_hologram_male.png?v=20260407b',
+      depthImage: '/assets/depth.png',
+      sourceFoundations: [
+        'soul',
+        'identity',
+        'concordance',
+        'goals',
+        'rituals',
+        'reflections',
+        'hypertraversal philosophy',
+      ],
+      personaBrief: {
+        archetype: 'cyberutopian topological liberator',
+        mood: 'focused radiant sovereignty',
+        foundationSummary: 'Alpha Prime now projects through a dedicated male cyberutopian hologram image derived from the Webase foundations brief rather than reusing Nova or the primary portrait image.',
+        utopianSignal: 'infinite utopia for all always',
+      },
+    },
     {
       name: 'Nova',
       designation: 'Ethereal Guide',
@@ -41,7 +65,12 @@ function App() {
   const [characterList, setCharacterList] = useState(predefinedCharacters);
   const [character, setCharacter] = useState(predefinedCharacters[0]);
 
-  const [holoMode, setHoloMode] = useState('2.5D'); // '2.5D', 'True3D', 'GenMesh', 'SplatLGM', 'SplatDream', 'SplatImage'
+  const [holoMode, setHoloMode] = useState(predefinedCharacters[0].hologramMode || '2.5D'); // 'SingleImage', '2.5D', 'True3D', 'GenMesh', 'SplatLGM', 'SplatDream', 'SplatImage'
+
+  const handleCharacterSelect = (nextCharacter) => {
+    setCharacter(nextCharacter);
+    setHoloMode(nextCharacter.hologramMode || '2.5D');
+  };
 
   const handleSavePersona = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(character, null, 2));
@@ -61,6 +90,16 @@ function App() {
           <Suspense fallback={null}>
             <scene>
               <BackgroundShader key={character.agentId + '-bg'} fragmentShaderStr={backgroundShader} />
+              {holoMode === 'SingleImage' && character.baseImage && (
+                <SingleImageHologram
+                  imageUrl={character.baseImage}
+                  depthUrl={character.depthImage}
+                  primaryColor={character.personaBrief?.renderPalette?.[0] || '#13e5ff'}
+                  secondaryColor={character.personaBrief?.renderPalette?.[1] || '#f3c43c'}
+                  accentColor={character.personaBrief?.renderPalette?.[2] || '#17274d'}
+                  presence={character.personaBrief?.presence ?? 1}
+                />
+              )}
               {holoMode === '2.5D' && <Hologram key={character.agentId + '-2.5'} imageUrls={character.baseImages} depthUrl={character.depthImage} />}
               {holoMode === 'True3D' && <ModelDisplacementHologram key={character.agentId + '-3D'} imageUrls={character.baseImages} depthUrl={character.depthImage} />}
               {holoMode === 'GenMesh' && <Gen3DMeshHologram modelUrl="/assets/base_mesh.glb" />}
@@ -75,14 +114,19 @@ function App() {
       <div className="title-overlay">
         <h1>Holoverse</h1>
         <h2>{character.name} :: {character.designation}</h2>
+        {character.personaBrief?.foundationSummary && (
+          <p style={{ maxWidth: '620px', marginTop: '10px', color: 'rgba(220,255,255,0.8)', lineHeight: 1.5 }}>
+            {character.personaBrief.foundationSummary}
+          </p>
+        )}
         
         <div className="action-links" style={{ marginBottom: '10px', flexWrap: 'wrap' }}>
           {characterList.map((char, index) => (
             <button 
               key={char.agentId || index}
               className={`webase-link ${character.name === char.name ? 'active' : ''}`} 
-              style={character.name === char.name ? {background: 'rgba(0, 255, 255, 0.2)', borderColor: 'var(--neon-cyan)', color: 'var(--neon-cyan)'} : {}} 
-              onClick={() => setCharacter(char)}
+              style={character.name === char.name ? {background: 'rgba(0, 255, 255, 0.2)', borderColor: 'var(--neon-cyan)', color: 'var(--neon-cyan)'} : {}}
+              onClick={() => handleCharacterSelect(char)}
             >
               {char.name}
             </button>
@@ -106,8 +150,23 @@ function App() {
           </button>
         </div>
 
+        {character.personaBrief?.foundationSignals?.length ? (
+          <div className="action-links" style={{ marginTop: '10px', flexWrap: 'wrap' }}>
+            {character.personaBrief.foundationSignals.map((signal) => (
+              <span
+                key={signal}
+                className="webase-link"
+                style={{ cursor: 'default', borderColor: 'rgba(0,255,255,0.3)', color: 'rgba(200,255,255,0.85)' }}
+              >
+                {signal}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         <div className="holo-toggles" style={{ flexDirection: 'column' }}>
           <div style={{ display: 'flex', gap: '8px' }}>
+            <button className={holoMode === 'SingleImage' ? 'active' : ''} onClick={() => setHoloMode('SingleImage')}>Single Image</button>
             <button className={holoMode === '2.5D' ? 'active' : ''} onClick={() => setHoloMode('2.5D')}>2.5D Shimmer</button>
             <button className={holoMode === 'True3D' ? 'active' : ''} onClick={() => setHoloMode('True3D')}>True 3D Relief</button>
             <button className={holoMode === 'GenMesh' ? 'active' : ''} onClick={() => setHoloMode('GenMesh')}>AI Gen Mesh</button>
